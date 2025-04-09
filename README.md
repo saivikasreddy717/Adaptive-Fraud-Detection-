@@ -1,10 +1,9 @@
 # Adaptive Fraud Detection
 
-Adaptive Fraud Detection is an end-to-end fraud detection pipeline that combines deep anomaly detection (via an Anomaly Transformer) and gradient boosting (XGBoost). It ingests real-time transaction data using Apache Kafka, stores data in Delta Lake for both batch and streaming analytics, and is containerized with Docker and orchestrated on Kubernetes for scalable deployment.
+Adaptive Fraud Detection is an end-to-end fraud detection pipeline that combines deep anomaly detection (via an Anomaly Transformer) with gradient boosting (XGBoost). The system streams transactions in real time using Apache Kafka, stores data in Delta Lake for both batch and streaming analytics, and is containerized with Docker and orchestrated on Kubernetes for scalable deployment.
 
 ## Table of Contents
-
-- [Project Overview](#project-overview)
+- [Overview](#overview)
 - [Features](#features)
 - [Folder Structure](#folder-structure)
 - [Requirements](#requirements)
@@ -21,29 +20,21 @@ Adaptive Fraud Detection is an end-to-end fraud detection pipeline that combines
 - [License](#license)
 - [Contact](#contact)
 
----
-
-## Project Overview
+## Overview
 
 This project implements a real-time fraud detection workflow that:
 
-- **Streams and Stores Data:** Apache Kafka streams transaction data in real time, while Delta Lake manages batch and streaming ingestion.
-- **Anomaly Detection:** An **Anomaly Transformer** analyzes time-series data to produce a reconstruction error signal.
-- **Fraud Classification:** Combines the computed anomaly signal with tabular features and trains an **XGBoost** model for fraud detection.
-- **Containerized and Deployable:** Docker is used to containerize the application, and Kubernetes ensures scalability and high availability in production environments.
-
----
+- **Streams and Stores Data:** Leverages Apache Kafka for real-time data streaming and Delta Lake for batch/streaming ingestion.
+- **Anomaly Detection:** Utilizes an **Anomaly Transformer** to compute reconstruction errors from transaction time-series data.
+- **Fraud Classification:** Integrates anomaly signals with tabular features to train an **XGBoost** classifier.
+- **Containerization & Scalability:** Employs Docker for containerization and Kubernetes for scalable deployment.
 
 ## Features
 
-- **End-to-End Pipeline** – Data ingestion, anomaly detection, classification, and deployment.
-- **Time-Series Analysis** – Employs an Anomaly Transformer to detect anomalies in transaction time-series data.
-- **XGBoost Classifier** – Uses gradient boosting for robust binary classification of fraud vs. non-fraud transactions.
-- **Real-Time Ingestion** – Kafka provides continuous streaming of new transaction data.
-- **Reliable Storage** – Delta Lake supports both batch and streaming writes for analytics.
-- **Containerization & Orchestration** – Docker images facilitate portability, and Kubernetes ensures scalable deployment.
-
----
+- **End-to-End Pipeline** – Covers data ingestion, anomaly detection, fraud classification, and deployment.
+- **Real-Time Analytics** – Continuously ingests and processes transaction data.
+- **Robust Classification** – Combines deep anomaly signals with gradient boosting for fraud prediction.
+- **Containerization & Orchestration** – Simplifies deployment using Docker and Kubernetes.
 
 ## Folder Structure
 
@@ -67,155 +58,168 @@ adaptive-fraud-detection/
 ├── k8s-deployment.yaml           # Kubernetes deployment and service definitions
 ├── requirements.txt              # Python dependencies
 └── README.md                     # This file
-Requirements
-Python 3.9+
+```
 
-PyTorch
+## Requirements
 
-XGBoost
+- **Python:** 3.9+
+- **Libraries:** PyTorch, XGBoost, Pandas, NumPy, Scikit-learn
+- **Big Data Tools:** PySpark & delta-spark for Delta Lake integration
+- **Messaging:** Apache Kafka (or equivalent Docker containers)
+- **Containerization:** Docker (optionally, Docker Compose)
+- **Orchestration:** Kubernetes CLI (kubectl, kubeconfig)
 
-Pandas, NumPy, Scikit-learn
+## Installation
 
-Apache Kafka (or equivalent Docker containers)
+1. **Clone the Repository:**
 
-PySpark & delta-spark (for Delta Lake integration)
+   ```bash
+   git clone https://github.com/your-username/adaptive-fraud-detection.git
+   cd adaptive-fraud-detection
+   ```
 
-Docker
+2. **Install Python Dependencies:**
 
-Kubernetes CLI (kubectl, kubeconfig)
+   ```bash
+   pip install -r requirements.txt
+   ```
 
-(Optional) Docker Compose
+3. **Configure Environment Variables:**
 
-Installation
-Clone the Repository:
+   If required, set environment variables (e.g., SPARK_HOME) in your shell configuration.
 
-bash
-Copy
-git clone https://github.com/your-username/adaptive-fraud-detection.git
-cd adaptive-fraud-detection
-Install Python Dependencies:
+## Usage
 
-bash
-Copy
-pip install -r requirements.txt
-Configure Environment Variables:
+### 1. Generate Synthetic Dataset
 
-If required, set environment variables (e.g., SPARK_HOME) in your shell configuration.
+Generate a synthetic dataset if real transaction data is unavailable:
 
-Usage
-1. Generate Synthetic Dataset
-If you don’t have real transaction data available, generate a synthetic dataset:
-
-bash
-Copy
+```bash
 python data/generate_dataset.py
-This creates a CSV file at data/transactions.csv with ~10,000 synthetic records.
+```
 
-2. Kafka Setup and Data Ingestion
-Start Kafka and Zookeeper:
+This creates `data/transactions.csv` with approximately 10,000 records.
 
-If you are using Docker Compose, run:
+### 2. Kafka Setup and Data Ingestion
 
-bash
-Copy
-docker-compose up -d
-Verify that Kafka and Zookeeper containers are running with:
+1. **Start Kafka and Zookeeper:**
 
-bash
-Copy
-docker ps
-Run the Kafka Producer:
+   If using Docker Compose, run:
 
-Push the synthetic data to Kafka:
+   ```bash
+   docker-compose up -d
+   ```
 
-bash
-Copy
-python ingestion/kafka_producer.py
-This script reads transactions.csv and sends each record as a JSON message to the Kafka topic (e.g., fraud_topic).
+2. **Verify Running Containers:**
 
-3. Delta Lake Ingestion
+   ```bash
+   docker ps
+   ```
+
+3. **Run the Kafka Producer:**
+
+   Push synthetic data to Kafka (e.g., topic `fraud_topic`):
+
+   ```bash
+   python ingestion/kafka_producer.py
+   ```
+
+### 3. Delta Lake Ingestion
+
 Stream data from Kafka into Delta Lake using PySpark:
 
-bash
-Copy
+```bash
 python ingestion/delta_ingest.py
-This script reads messages from the Kafka topic and writes them to a Delta Lake table at /tmp/delta/transactions (adjust the path if needed).
+```
 
-4. Model Training and Prediction
-Train the anomaly transformer and XGBoost model, then generate predictions:
+This script reads messages from Kafka and writes them to a Delta Lake table located at `/tmp/delta/transactions` (adjust the path if needed).
 
-bash
-Copy
+### 4. Model Training and Prediction
+
+Train models and generate predictions by running:
+
+```bash
 python models/pipeline.py
-The pipeline script:
+```
 
-Trains the Anomaly Transformer on time-series data.
+The pipeline:
 
-Computes reconstruction errors (anomaly signals).
+- Trains the Anomaly Transformer on time-series data.
+- Computes reconstruction errors (anomaly signals).
+- Combines these errors with additional features.
+- Splits the data into training and validation sets.
+- Trains an XGBoost classifier.
+- Evaluates performance via ROC AUC score.
 
-Combines the anomaly errors with additional tabular data.
+### 5. Containerization with Docker
 
-Splits the data into training and validation sets.
+1. **Build the Docker Image:**
 
-Trains an XGBoost classifier for fraud prediction.
+   ```bash
+   docker build -t your-dockerhub-username/fraud-detection:latest .
+   ```
 
-Evaluates performance by printing the ROC AUC score.
+2. **Run the Docker Container:**
 
-5. Containerization with Docker
-Build the Docker Image:
+   ```bash
+   docker run -p 5000:5000 your-dockerhub-username/fraud-detection:latest
+   ```
 
-bash
-Copy
-docker build -t your-dockerhub-username/fraud-detection:latest .
-Run the Docker Container:
+Adjust port mappings and configurations as necessary.
 
-bash
-Copy
-docker run -p 5000:5000 your-dockerhub-username/fraud-detection:latest
-Adjust port mappings and container configurations as necessary.
+### 6. Kubernetes Deployment
 
-6. Kubernetes Deployment
-Deploy on Kubernetes:
+1. **Deploy Using Kubernetes:**
 
-Apply the deployment configuration:
+   ```bash
+   kubectl apply -f k8s-deployment.yaml
+   ```
 
-bash
-Copy
-kubectl apply -f k8s-deployment.yaml
-Access the Service:
+2. **Access the Service:**
 
-If the LoadBalancer external IP is pending, use port forwarding:
+   If the LoadBalancer external IP is pending, use port forwarding:
 
-bash
-Copy
-kubectl port-forward service/fraud-detection-service 5000:80
-Then open http://localhost:5000 in your browser.
+   ```bash
+   kubectl port-forward service/fraud-detection-service 5000:80
+   ```
 
-Troubleshooting
-External IP Pending:
-For local clusters, use port-forwarding or run minikube tunnel (if using minikube).
+   Then open [http://localhost:5000](http://localhost:5000) in your browser.
 
-Module Import Errors:
-Verify all required modules (e.g., xgboost, pyspark, delta-spark) are listed in requirements.txt and installed.
+## Troubleshooting
 
-Slow Processing:
-Adjust the sleep interval in your Kafka producer for testing or monitor system resources.
+- **External IP Pending:**  
+  For local clusters, use port forwarding or run `minikube tunnel` if using Minikube.
 
-Connectivity Issues:
-Ensure that Kafka, Zookeeper, and your Delta Lake ingestion processes are running properly by checking logs.
+- **Module Import Errors:**  
+  Ensure all required modules (e.g., xgboost, pyspark, delta-spark) are installed.
 
-Future Enhancements
-Additional Models:
-Experiment with other ensemble methods like CatBoost or LightGBM.
+- **Slow Processing:**  
+  Adjust the sleep interval in the Kafka producer or monitor system resources.
 
-Advanced Feature Engineering:
-Add domain-specific features such as rolling statistics, lag features, and time-of-day indicators.
+- **Connectivity Issues:**  
+  Verify that Kafka, Zookeeper, and Delta Lake ingestion processes are running properly by checking logs.
 
-Monitoring and Alerting:
-Integrate monitoring tools like Prometheus and Grafana for production deployments.
+## Future Enhancements
 
-CI/CD Integration:
-Set up automated testing, building, and deployment using GitHub Actions or another CI/CD platform.
+- **Additional Models:**  
+  Experiment with other ensemble methods like CatBoost or LightGBM.
 
-Data Drift and Retraining:
-Implement mechanisms to monitor data drift and trigger retraining when necessary.
+- **Advanced Feature Engineering:**  
+  Add domain-specific features such as rolling statistics, lag features, and time-of-day indicators.
+
+- **Monitoring and Alerting:**  
+  Integrate monitoring tools like Prometheus and Grafana for production deployments.
+
+- **CI/CD Integration:**  
+  Set up automated testing, building, and deployment using GitHub Actions or another CI/CD platform.
+
+- **Data Drift and Retraining:**  
+  Implement mechanisms to monitor data drift and trigger retraining when necessary.
+
+## License
+
+[Insert your license information here.]
+
+## Contact
+
+For questions or further details, please contact [your-email@example.com].
