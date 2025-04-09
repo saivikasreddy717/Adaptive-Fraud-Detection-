@@ -1,4 +1,3 @@
-# kafka_producer.py
 import json
 import time
 import pandas as pd
@@ -11,11 +10,19 @@ producer = KafkaProducer(
 
 def produce_messages(csv_file, topic='fraud_topic'):
     data = pd.read_csv(csv_file)
-    for _, row in data.iterrows():
+    total = len(data)
+    print(f"Total messages to send: {total}")
+    for i, (_, row) in enumerate(data.iterrows(), start=1):
         message = row.to_dict()
-        producer.send(topic, message)
-        time.sleep(0.1)  # simulate a data stream
+        try:
+            producer.send(topic, message)
+        except Exception as e:
+            print(f"Error on message {i}: {e}")
+        if i % 100 == 0:
+            print(f"Sent {i} messages out of {total}")
+        time.sleep(0.01)  # adjust or remove for testing
     producer.flush()
+    print("All messages produced.")
 
 if __name__ == '__main__':
-    produce_messages('data/transactions.csv')
+    produce_messages("data/transactions.csv")
