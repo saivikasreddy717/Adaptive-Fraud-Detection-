@@ -1,0 +1,11 @@
+pandas
+numpy
+scikit-learn
+torch
+torchvision
+pytorch-tabnet
+kafka-python
+confluent-kafka
+# If using Apache Spark and Delta Lake (optional)
+pyspark
+delta-spark
